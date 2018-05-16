@@ -142,8 +142,8 @@ def generate(min_syllables=2, max_syllables=8) -> str:
         syllable = grammar.generate()
         if utterance.endswith(VOWELS) and syllable.startswith(VOWELS):
             continue
-        # if len(utterance) > 0 and syllable.startswith(utterance[-1]):
-        #     continue
+        if len(utterance) > 0 and syllable.startswith(utterance[-1]):
+            continue
         utterance += syllable
         generated += 1
 
