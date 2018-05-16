@@ -7,7 +7,7 @@ Generates pseudo-Plains Cree words, in Standard Roman Orthography (SRO)
 
 from pathlib import Path
 from random import choice, randint
-from typing import Dict, Sequence
+from typing import Dict, Sequence, TextIO, Optional as Maybe
 
 here = Path(__file__).parent
 
@@ -17,15 +17,13 @@ class Production:
         ...
 
 
-productions: Dict[str, Production] = {}
-
-
 class ProductionReference(Production):
-    def __init__(self, ref: str) -> None:
+    def __init__(self, grammar: 'Grammar', ref: str) -> None:
         self.ref = ref
+        self.grammar = grammar
 
     def generate(self) -> str:
-        return productions[self.ref].generate()
+        return self.grammar[self.ref].generate()
 
 
 class Terminal(Production):
@@ -62,53 +60,80 @@ class Alternation(Production):
         return choice(self.alternatives).generate()
 
 
-def parse_definition(definition: str) -> Production:
-    alternatives = [parse_alternative(d.strip())
-                    for d in definition.split('|')]
+class Grammar:
+    start_name: str
 
-    if len(alternatives) > 1:
-        return Alternation(alternatives)
-    else:
-        return alternatives[0]
+    def __init__(self) -> None:
+        self.productions: Dict[str, Production] = {}
+
+    def __getitem__(self, name: str) -> Production:
+        return self.productions[name]
+
+    def __setitem__(self, name: str, definition: Production) -> None:
+        self.productions[name] = definition
+        if not hasattr(self, 'start_name'):
+            self.start_name = name
+
+    @property
+    def start(self) -> Production:
+        return self[self.start_name]
+
+    def generate(self) -> str:
+        return self.start.generate()
 
 
-def parse_alternative(alternative: str):
-    concatenation = alternative.split()
-    return Concatenation([parse_optional(o.strip()) for o in concatenation])
+class GrammarFactory:
+    def parse_file(self, grammar_file: TextIO) -> Grammar:
+        self.grammar = Grammar()
+        for line in grammar_file:
+            self.parse_production(line)
+        return self.grammar
 
+    def parse_production(self, line: str) -> None:
+        if line.strip() == '':
+            return
+        # It's a production rule.
+        name, definition = line.split(':=')
+        name = name.strip()
+        self.grammar[name] = self.parse_definition(definition)
 
-def parse_value(text: str) -> Production:
-    if first_char_uppercase(text):
-        return ProductionReference(text)
-    else:
-        return Terminal(text)
+    def parse_definition(self, definition: str) -> Production:
+        alternatives = [self.parse_alternative(d.strip())
+                        for d in definition.split('|')]
 
+        if len(alternatives) > 1:
+            return Alternation(alternatives)
+        else:
+            return alternatives[0]
 
-def parse_optional(text: str):
-    if text.endswith('?'):
-        return Optional(parse_value(text[:-1]))
-    else:
-        return parse_value(text)
+    def parse_alternative(self, alternative: str):
+        concatenation = alternative.split()
+        return Concatenation([self.parse_optional(o.strip())
+                              for o in concatenation])
+
+    def parse_value(self, text: str) -> Production:
+        if first_char_uppercase(text):
+            return ProductionReference(self.grammar, text)
+        else:
+            return Terminal(text)
+
+    def parse_optional(self, text: str) -> Production:
+        if text.endswith('?'):
+            return Optional(self.parse_value(text[:-1]))
+        else:
+            return self.parse_value(text)
 
 
 def first_char_uppercase(text: str) -> bool:
     return text[:1].upper() == text[:1]
 
 
-def generate(min_syllables=2, max_syllables=8) -> str:
-    with open(here / 'phonotactics.txt') as grammar_file:
-        for line in grammar_file:
-            if line.strip() == '':
-                continue
-            # It's a production rule.
-            name, definition = line.split(':=')
-            name = name.strip()
-            productions[name] = parse_definition(definition)
+with open(here / 'phonotactics.txt') as grammar_file:
+    grammar = GrammarFactory().parse_file(grammar_file)
 
-    start = productions['Syllable']
-    return ''.join((start.generate() for _ in
-                    range(randint(min_syllables, max_syllables))))
-
+    def generate(min_syllables=2, max_syllables=8) -> str:
+        return ''.join((grammar.generate() for _ in
+                        range(randint(min_syllables, max_syllables))))
 
 if __name__ == '__main__':
     print(generate())
