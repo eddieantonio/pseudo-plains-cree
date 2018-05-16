@@ -135,14 +135,19 @@ with open(here / 'phonotactics.txt') as grammar_file:
 
 
 def generate(min_syllables=2, max_syllables=8) -> str:
-    utterance = ''
+    """
+    Generate a pseudo-Plains Cree word.
+    """
     needed = randint(min_syllables, max_syllables)
-    generated = 0
+    # Generate AT LEAST one syllable.
+    utterance = grammar.generate()
+
+    generated = 1
     while generated < needed:
         syllable = grammar.generate()
         if utterance.endswith(VOWELS) and syllable.startswith(VOWELS):
             continue
-        if len(utterance) > 0 and syllable.startswith(utterance[-1]):
+        if syllable.startswith(utterance[-1]):
             continue
         utterance += syllable
         generated += 1
