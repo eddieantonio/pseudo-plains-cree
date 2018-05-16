@@ -80,11 +80,22 @@ def parse_alternative(alternative: str):
     return Concatenation([parse_optional(o.strip()) for o in concatenation])
 
 
+def parse_value(text: str) -> Production:
+    if first_char_uppercase(text):
+        return ProductionReference(text)
+    else:
+        return Terminal(text)
+
+
 def parse_optional(text: str):
     if text.endswith('?'):
-        return Optional(ProductionReference(text[:-1]))
+        return Optional(parse_value(text[:-1]))
     else:
-        return ProductionReference(text)
+        return parse_value(text)
+
+
+def first_char_uppercase(text: str) -> bool:
+    return text[:1].upper() == text[:1]
 
 
 def generate(min_syllables=2, max_syllables=8) -> str:
