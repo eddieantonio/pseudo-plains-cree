@@ -128,12 +128,27 @@ def first_char_uppercase(text: str) -> bool:
     return text[:1].upper() == text[:1]
 
 
+VOWELS = tuple('aioâîôê')
+
 with open(here / 'phonotactics.txt') as grammar_file:
     grammar = GrammarFactory().parse_file(grammar_file)
 
-    def generate(min_syllables=2, max_syllables=8) -> str:
-        return ''.join((grammar.generate() for _ in
-                        range(randint(min_syllables, max_syllables))))
+
+def generate(min_syllables=2, max_syllables=8) -> str:
+    utterance = ''
+    needed = randint(min_syllables, max_syllables)
+    generated = 0
+    while generated < needed:
+        syllable = grammar.generate()
+        if utterance.endswith(VOWELS) and syllable.startswith(VOWELS):
+            continue
+        # if len(utterance) > 0 and syllable.startswith(utterance[-1]):
+        #     continue
+        utterance += syllable
+        generated += 1
+
+    return utterance
+
 
 if __name__ == '__main__':
     print(generate())
