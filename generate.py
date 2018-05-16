@@ -87,7 +87,7 @@ def parse_optional(text: str):
         return ProductionReference(text)
 
 
-if __name__ == '__main__':
+def generate(min_syllables=2, max_syllables=8) -> str:
     with open(here / 'phonotactics.txt') as grammar_file:
         for line in grammar_file:
             if line.strip() == '':
@@ -98,5 +98,9 @@ if __name__ == '__main__':
             productions[name] = parse_definition(definition)
 
     start = productions['Syllable']
-    syllables = (start.generate() for _ in range(randint(2, 8)))
-    print(*syllables, sep='')
+    return ''.join((start.generate() for _ in
+                    range(randint(min_syllables, max_syllables))))
+
+
+if __name__ == '__main__':
+    print(generate())
