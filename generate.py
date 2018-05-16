@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+"""
+Generates pseudo-Plains Cree words, in Standard Roman Orthography (SRO)
+"""
+
 from pathlib import Path
 from random import choice, randint
+from typing import Dict, Sequence
 
 here = Path(__file__).parent
-
-productions = {}
 
 
 class Production:
@@ -14,8 +17,11 @@ class Production:
         ...
 
 
+productions: Dict[str, Production] = {}
+
+
 class ProductionReference(Production):
-    def __init__(self, ref):
+    def __init__(self, ref: str) -> None:
         self.ref = ref
 
     def generate(self) -> str:
@@ -56,7 +62,7 @@ class Alternation(Production):
         return choice(self.alternatives).generate()
 
 
-def parse_definition(definition) -> Production:
+def parse_definition(definition: str) -> Production:
     alternatives = [d.strip() for d in definition.split('|')]
 
     if all(a.lower()[:1] == a[:1] for a in alternatives):
@@ -69,12 +75,12 @@ def parse_definition(definition) -> Production:
         raise ValueError(definition)
 
 
-def parse_alternative(alternative):
+def parse_alternative(alternative: str):
     concatenation = alternative.split()
     return Concatenation([parse_optional(o.strip()) for o in concatenation])
 
 
-def parse_optional(text):
+def parse_optional(text: str):
     if text.endswith('?'):
         return Optional(ProductionReference(text[:-1]))
     else:
@@ -92,5 +98,5 @@ if __name__ == '__main__':
             productions[name] = parse_definition(definition)
 
     start = productions['Syllable']
-    syllables = (start.generate() for _ in range(randint(1, 8)))
+    syllables = (start.generate() for _ in range(randint(2, 8)))
     print(*syllables, sep='')
