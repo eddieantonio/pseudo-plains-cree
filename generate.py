@@ -63,16 +63,13 @@ class Alternation(Production):
 
 
 def parse_definition(definition: str) -> Production:
-    alternatives = [d.strip() for d in definition.split('|')]
+    alternatives = [parse_alternative(d.strip())
+                    for d in definition.split('|')]
 
-    if all(a.lower()[:1] == a[:1] for a in alternatives):
-        # It's a terminal!
-        return Terminal(alternatives)
-    elif all(a.upper()[:1] == a[:1] for a in alternatives):
-        # It's a non-terminal!
-        return Alternation([parse_alternative(a) for a in alternatives])
+    if len(alternatives) > 1:
+        return Alternation(alternatives)
     else:
-        raise ValueError(definition)
+        return alternatives[0]
 
 
 def parse_alternative(alternative: str):
