@@ -1,13 +1,12 @@
-Syllable    := Onset? V C_{end}?
+Syllable    := Onset? V Coda?
 
 V           := V_{short} | V_{long}
 
 V_{short}   := a | i | o
 V_{long}    := â | î | ô | ê
 
-Onset       := C_{w} W? | C_{no-w}
+Onset       := C_{w} w? | C_{no-w}
 C_{w}       := p | t | k | s | m | n
 C_{no-w}    := w | y | c
-W           := w
 
-C_{end}     := p | t | k | c | s | h | m | n | y | w | hk
+Coda        := p | t | k | c | s | h | m | n | y | w | hk
