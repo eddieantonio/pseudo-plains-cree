@@ -16,10 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from hypothesis import given  # type: ignore
-from hypothesis.strategies import random_module, composite  # type: ignore
+import re
 
-from generate import generate
+from hypothesis import given  # type: ignore
+from hypothesis.strategies import composite, random_module  # type: ignore
+
+from generate import generate, grammar
 
 
 @composite
@@ -51,6 +53,15 @@ def test_doubled_grams(utterance):
     It should not generate sequences where any letters are doubled.
     """
     assert all(g1 != g2 for g1, g2 in bigrams(utterance))
+
+
+@given(utterances())
+def test_grammar_regular_expression(utterance):
+    """
+    The regular expression yielded by the grammar must accept the utterance.
+    """
+    pattern = re.compile(grammar.to_regex())
+    assert pattern.match(utterance)
 
 
 # ############################### Utilities ############################### #
