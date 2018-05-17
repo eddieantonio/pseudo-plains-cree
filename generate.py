@@ -171,5 +171,11 @@ def generate(min_syllables=2, max_syllables=8) -> str:
     return utterance
 
 
+def lorem(min_words=40, max_words=400) -> str:
+    needed = randint(min_words, max_words)
+    sentence = ' '.join(generate() for _ in range(needed))
+    return sentence.capitalize() + '.'
+
+
 if __name__ == '__main__':
-    print(generate())
+    print(lorem())
