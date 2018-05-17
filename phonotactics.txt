@@ -7,6 +7,6 @@ V_{long}    := â | î | ô | ê
 
 Onset       := C_{w} w? | C_{no-w}
 C_{w}       := p | t | k | s | m | n
-C_{no-w}    := w | y | c
+C_{no-w}    := c | y | w
 
 Coda        := p | t | k | c | s | h | m | n | y | w | hk
