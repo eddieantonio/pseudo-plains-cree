@@ -21,6 +21,7 @@
 Generates pseudo-Plains Cree words, in Standard Roman Orthography (SRO).
 """
 
+import re
 from pathlib import Path
 from random import choice, randint
 from typing import Dict, Sequence, TextIO, Optional as Maybe
@@ -30,7 +31,10 @@ here = Path(__file__).parent
 
 class Production:
     def generate(self) -> str:
-        ...
+        raise NotImplementedError
+
+    def to_regex(self) -> str:
+        raise NotImplementedError
 
 
 class ProductionReference(Production):
@@ -38,16 +42,25 @@ class ProductionReference(Production):
         self.ref = ref
         self.grammar = grammar
 
+    def dereference(self) -> Production:
+        return self.grammar[self.ref]
+
     def generate(self) -> str:
-        return self.grammar[self.ref].generate()
+        return self.dereference().generate()
+
+    def to_regex(self) -> str:
+        return self.dereference().to_regex()
 
 
 class Terminal(Production):
-    def __init__(self, alternatives):
-        self.alternatives = list(alternatives)
+    def __init__(self, literal: str):
+        self.literal = literal
 
     def generate(self) -> str:
-        return choice(self.alternatives)
+        return self.literal
+
+    def to_regex(self) -> str:
+        return re.escape(self.literal)
 
 
 class Optional(Production):
@@ -59,6 +72,9 @@ class Optional(Production):
             return self.rule.generate()
         return ''
 
+    def to_regex(self) -> str:
+        return '(' + self.rule.to_regex() + ')?'
+
 
 class Concatenation(Production):
     def __init__(self, components):
@@ -67,6 +83,9 @@ class Concatenation(Production):
     def generate(self) -> str:
         return ''.join(c.generate() for c in self.components)
 
+    def to_regex(self) -> str:
+        return ''.join(c.to_regex() for c in self.components)
+
 
 class Alternation(Production):
     def __init__(self, alternatives):
@@ -74,6 +93,9 @@ class Alternation(Production):
 
     def generate(self) -> str:
         return choice(self.alternatives).generate()
+
+    def to_regex(self) -> str:
+        return '(' + '|'.join(a.to_regex() for a in self.alternatives) + ')'
 
 
 class Grammar:
@@ -96,6 +118,9 @@ class Grammar:
 
     def generate(self) -> str:
         return self.start.generate()
+
+    def to_regex(self) -> str:
+        return self.start.to_regex()
 
 
 class GrammarFactory:
