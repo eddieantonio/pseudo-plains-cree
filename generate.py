@@ -53,14 +53,14 @@ class ProductionReference(Production):
 
 
 class Terminal(Production):
-    def __init__(self, literal: str):
+    def __init__(self, literal: str) -> None:
         self.literal = literal
 
     def generate(self) -> str:
         return self.literal
 
     def to_regex(self) -> str:
-        return re.escape(self.literal)
+        return re_uescape(self.literal)
 
 
 class Optional(Production):
@@ -73,7 +73,12 @@ class Optional(Production):
         return ''
 
     def to_regex(self) -> str:
-        return '(' + self.rule.to_regex() + ')?'
+        inner_re = self.rule.to_regex()
+
+        # Output a simpler form if we can.
+        if is_single_char_terminal(self.rule):
+            return inner_re + '?'
+        return f"({inner_re})?"
 
 
 class Concatenation(Production):
@@ -95,6 +100,9 @@ class Alternation(Production):
         return choice(self.alternatives).generate()
 
     def to_regex(self) -> str:
+        # Return a character alternation if we can.
+        if all(is_single_char_terminal(a) for a in self.alternatives):
+            return '[' + ''.join(a.to_regex() for a in self.alternatives) + ']'
         return '(' + '|'.join(a.to_regex() for a in self.alternatives) + ')'
 
 
@@ -148,7 +156,10 @@ class GrammarFactory:
             return alternatives[0]
 
     def parse_alternative(self, alternative: str):
-        concatenation = alternative.split()
+        concatenation = [a.strip() for a in alternative.split()]
+        # Don't need to create a concatenation if there is only one option!
+        if len(concatenation) == 1:
+            return self.parse_optional(concatenation[0])
         return Concatenation([self.parse_optional(o.strip())
                               for o in concatenation])
 
@@ -167,6 +178,20 @@ class GrammarFactory:
 
 def first_char_uppercase(text: str) -> bool:
     return text[:1].upper() == text[:1]
+
+
+def is_single_char_terminal(p: Production) -> bool:
+    return isinstance(p, Terminal) and len(p.literal) == 1
+
+
+def re_uescape(text: str) -> str:
+    """
+    Like re.escape, except keeps maintains non-ASCII characters.
+    """
+    return ''.join(
+        re.escape(c) if c < '\u0080' else c
+        for c in text
+    )
 
 
 VOWELS = tuple('aioâîôê')
