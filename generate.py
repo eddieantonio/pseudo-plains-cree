@@ -186,7 +186,7 @@ def is_single_char_terminal(p: Production) -> bool:
 
 
 def wrapped_in_parens(s: str) -> bool:
-    return re.match('^[(].+[)]$', s)
+    return bool(re.match('^[(].+[)]$', s))
 
 
 def re_uescape(text: str) -> str:
@@ -233,4 +233,14 @@ def lorem(min_words=40, max_words=400) -> str:
 
 
 if __name__ == '__main__':
-    print(lorem())
+    import sys
+    command = sys.argv[1] if len(sys.argv) > 1 else 'lorem'
+    if command == 'lorem':
+        print(lorem())
+    elif command == 'word':
+        print(generate())
+    elif command == 'regex':
+        print(grammar.to_regex())
+    else:
+        print("Invalid subcommand", file=sys.stderr)
+        sys.exit(1)
