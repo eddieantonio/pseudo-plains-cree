@@ -140,7 +140,7 @@ class Parser:
         return self.grammar
 
     def parse_production(self, line: str) -> None:
-        if line.strip() == '':
+        if line.strip() == '' or line.lstrip().startswith('#'):
             return
         # It's a production rule.
         name, definition = line.split(':=')
