@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-dataclasses = "*"
+dataclasses = {version = "*", markers = "python_version < '3.7'"}
 
 [dev-packages]
 mypy = "*"
