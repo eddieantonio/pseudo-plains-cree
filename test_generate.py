@@ -21,7 +21,7 @@ import re
 from hypothesis import given  # type: ignore
 from hypothesis.strategies import composite, random_module  # type: ignore
 
-from psuedo_plains_cree import generate, grammar
+from pseudo_plains_cree import generate, grammar
 
 
 @composite

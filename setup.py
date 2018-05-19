@@ -3,5 +3,5 @@
 
 from setuptools import setup
 
-setup(name='psuedo_plains_cree',
+setup(name='pseudo_plains_cree',
       version='0')
