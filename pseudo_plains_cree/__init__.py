@@ -21,37 +21,13 @@
 Generates pseudo-Plains Cree words, in Standard Roman Orthography (SRO).
 """
 
-import re
 from pathlib import Path
-from random import choice, randint
-from typing import Dict, Sequence, TextIO, Optional
+from random import randint
+
+from ._grammar import Parser
 
 
-
-def first_char_uppercase(text: str) -> bool:
-    return text[:1].upper() == text[:1]
-
-
-def is_single_char_terminal(p: Production) -> bool:
-    return isinstance(p, Terminal) and len(p.literal) == 1
-
-
-def wrapped_in_parens(s: str) -> bool:
-    return bool(re.match('^[(].+[)]$', s))
-
-
-def re_uescape(text: str) -> str:
-    """
-    Like re.escape, except maintains non-ASCII characters.
-    """
-    return ''.join(
-        re.escape(c) if c < '\u0080' else c
-        for c in text
-    )
-
-
-VOWELS = tuple('aioâîôê')
-
+here = Path(__file__).parent
 with open(here / 'phonotactics.txt') as grammar_file:
     grammar = Parser().parse_file(grammar_file)
 
@@ -60,6 +36,8 @@ def generate(min_syllables=2, max_syllables=8) -> str:
     """
     Generate a pseudo-Plains Cree word.
     """
+    VOWELS = tuple('aioâîôê')
+
     needed = randint(min_syllables, max_syllables)
     # Generate AT LEAST one syllable.
     utterance = grammar.generate()
