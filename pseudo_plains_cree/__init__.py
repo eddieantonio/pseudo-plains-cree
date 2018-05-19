@@ -56,20 +56,9 @@ def generate(min_syllables=2, max_syllables=8) -> str:
 
 
 def lorem(min_words=40, max_words=400) -> str:
+    """
+    Generate ipsum text out of pseudo words.
+    """
     needed = randint(min_words, max_words)
     sentence = ' '.join(generate() for _ in range(needed))
     return sentence.capitalize() + '.'
-
-
-if __name__ == '__main__':
-    import sys
-    command = sys.argv[1] if len(sys.argv) > 1 else 'lorem'
-    if command == 'lorem':
-        print(lorem())
-    elif command == 'word':
-        print(generate())
-    elif command == 'regex':
-        print(grammar.to_regex())
-    else:
-        print("Invalid subcommand", file=sys.stderr)
-        sys.exit(1)
