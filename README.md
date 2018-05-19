@@ -9,6 +9,30 @@ Cree orthography, or to create [Lorem ipsum][Lorem] text.
 
 [Lorem]: https://en.wikipedia.org/wiki/Lorem_ipsum
 
+Usage
+-----
+
+From the command line:
+
+Generate a word:
+
+```
+$ python3 -m pseudo_plains_cree word
+```
+
+Generate a paragraph:
+
+```
+$ python3 -m pseudo_plains_cree lorem
+```
+
+Print the regular expression used to generate a syllable:
+
+```
+$ python3 -m pseudo_plains_cree regex
+```
+
+
 License
 -------
 
