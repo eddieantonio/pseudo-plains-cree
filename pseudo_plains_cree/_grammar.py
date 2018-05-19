@@ -33,8 +33,33 @@ class Production:
         raise NotImplementedError
 
 
+class Grammar:
+    start_name: str
+
+    def __init__(self) -> None:
+        self.productions: Dict[str, Production] = {}
+
+    def __getitem__(self, name: str) -> Production:
+        return self.productions[name]
+
+    def __setitem__(self, name: str, definition: Production) -> None:
+        self.productions[name] = definition
+        if not hasattr(self, 'start_name'):
+            self.start_name = name
+
+    @property
+    def start(self) -> Production:
+        return self[self.start_name]
+
+    def generate(self) -> str:
+        return self.start.generate()
+
+    def to_regex(self) -> str:
+        return self.start.to_regex()
+
+
 class ProductionReference(Production):
-    def __init__(self, grammar: 'Grammar', ref: str) -> None:
+    def __init__(self, grammar: Grammar, ref: str) -> None:
         self.ref = ref
         self.grammar = grammar
 
@@ -101,31 +126,6 @@ class Alternation(Production):
         if all(is_single_char_terminal(a) for a in self.alternatives):
             return '[' + ''.join(a.to_regex() for a in self.alternatives) + ']'
         return '(' + '|'.join(a.to_regex() for a in self.alternatives) + ')'
-
-
-class Grammar:
-    start_name: str
-
-    def __init__(self) -> None:
-        self.productions: Dict[str, Production] = {}
-
-    def __getitem__(self, name: str) -> Production:
-        return self.productions[name]
-
-    def __setitem__(self, name: str, definition: Production) -> None:
-        self.productions[name] = definition
-        if not hasattr(self, 'start_name'):
-            self.start_name = name
-
-    @property
-    def start(self) -> Production:
-        return self[self.start_name]
-
-    def generate(self) -> str:
-        return self.start.generate()
-
-    def to_regex(self) -> str:
-        return self.start.to_regex()
 
 
 class Parser:
