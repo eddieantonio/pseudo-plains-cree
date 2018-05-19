@@ -22,7 +22,9 @@ Hand-written, poorly-specified, brittle pseudo Backus-Naur form parser.
 
 import re
 from random import choice
-from typing import TextIO, Dict
+from typing import Dict, Sequence, TextIO
+
+from dataclasses import dataclass
 
 
 class Production:
@@ -58,24 +60,24 @@ class Grammar:
         return self.start.to_regex()
 
 
+@dataclass
 class ProductionReference(Production):
-    def __init__(self, grammar: Grammar, ref: str) -> None:
-        self.ref = ref
-        self.grammar = grammar
+    grammar: Grammar
+    ref: str
 
-    def dereference(self) -> Production:
+    def _dereference(self) -> Production:
         return self.grammar[self.ref]
 
     def generate(self) -> str:
-        return self.dereference().generate()
+        return self._dereference().generate()
 
     def to_regex(self) -> str:
-        return self.dereference().to_regex()
+        return self._dereference().to_regex()
 
 
+@dataclass
 class Terminal(Production):
-    def __init__(self, literal: str) -> None:
-        self.literal = literal
+    literal: str
 
     def generate(self) -> str:
         return self.literal
@@ -84,9 +86,9 @@ class Terminal(Production):
         return re_uescape(self.literal)
 
 
+@dataclass
 class Maybe(Production):
-    def __init__(self, rule: Production) -> None:
-        self.rule = rule
+    rule: Production
 
     def generate(self) -> str:
         if choice((True, False)):
@@ -103,9 +105,9 @@ class Maybe(Production):
         return f"({inner_re})?"
 
 
+@dataclass
 class Concatenation(Production):
-    def __init__(self, components):
-        self.components = components
+    components: Sequence[Production]
 
     def generate(self) -> str:
         return ''.join(c.generate() for c in self.components)
@@ -114,9 +116,9 @@ class Concatenation(Production):
         return ''.join(c.to_regex() for c in self.components)
 
 
+@dataclass
 class Alternation(Production):
-    def __init__(self, alternatives):
-        self.alternatives = alternatives
+    alternatives: Sequence[Production]
 
     def generate(self) -> str:
         return choice(self.alternatives).generate()
